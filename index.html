@@ -209,6 +209,18 @@
         <div style="font-size:13.5px; color:var(--ink-soft); margin-top:5px;">7/7 — 7/11，共住宿 4 晚</div>
       </div>
     </div>
+
+    <!-- 方案 A 新增：手動備份與同步區塊 -->
+    <div class="card" style="border: 1px solid var(--accent); background: linear-gradient(135deg, #F4F6F9, #FFFFFF);">
+      <h2>💾 資料備份與跨裝置同步</h2>
+      <p style="font-size:13px; color:var(--ink-soft); margin:0 0 12px 0;">可以在此將電腦安排好的資料複製，並發送到手機上貼入匯入。</p>
+      <div class="form-grid">
+        <button class="btn btn-secondary" onclick="exportData()">📋 複製同步代碼 (由電腦點擊)</button>
+        <label style="margin-top:14px;">在另一台裝置貼入代碼匯入：</label>
+        <textarea id="import-area" rows="3" placeholder="在此貼上複製下來的代碼..."></textarea>
+        <button class="btn btn-primary" style="margin-top:8px; font-size:14.5px; padding:10px;" onclick="importData()">📥 匯入同步代碼 (由手機點擊)</button>
+      </div>
+    </div>
   </div>
  
   <div class="page" id="page-expense">
@@ -357,12 +369,11 @@ let data = defaultData();
 function setSyncStatus(state){
   const dot = document.getElementById("sync-dot");
   const txt = document.getElementById("sync-text");
-  if(state==="syncing"){ dot.className="sync-dot syncing"; txt.textContent="資料同步中"; }
+  if(state==="syncing"){ dot.className="sync-dot syncing"; txt.textContent="資料處理中"; }
   else if(state==="done"){ dot.className="sync-dot"; txt.textContent="已儲存至瀏覽器"; }
   else if(state==="error"){ dot.className="sync-dot syncing"; txt.textContent="儲存失敗"; }
 }
  
-// 修改為純網頁 localStorage 邏輯
 async function loadData(){
   setSyncStatus("syncing");
   try{
@@ -396,7 +407,6 @@ function saveData(){
   }, 400);
 }
  
-// 多分頁/裝置多視窗自動同步機制
 setInterval(()=>{
   try{
     const result = localStorage.getItem(STORAGE_KEY);
@@ -411,6 +421,46 @@ setInterval(()=>{
     }
   }catch(e){ }
 }, 3000);
+
+// 新增功能：導出與匯入函數
+function exportData(){
+  try {
+    const jsonStr = JSON.stringify(data);
+    const base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
+    navigator.clipboard.writeText(base64Str).then(()=>{
+      alert("🎉 同步代碼已成功複製到剪貼簿！快去傳給手機吧！");
+    }).catch(err => {
+      // 備用方案：如果瀏覽器不支援 clipboard API，直接顯示在輸入框讓使用者手動複製
+      document.getElementById("import-area").value = base64Str;
+      document.getElementById("import-area").select();
+      alert("代碼已生成在下方輸入框中，請手動全選複製。");
+    });
+  } catch(e) {
+    alert("複製失敗，請重試");
+  }
+}
+
+function importData(){
+  const base64Str = document.getElementById("import-area").value.trim();
+  if(!base64Str) { alert("請先貼入代碼！"); return; }
+  if(!confirm("⚠️ 匯入將會完全覆蓋此裝置目前的資料（包含所有行程與記帳），確定要繼續嗎？")) return;
+  
+  try {
+    const jsonStr = decodeURIComponent(escape(atob(base64Str)));
+    const parsed = JSON.parse(jsonStr);
+    if(parsed && (parsed.expenses || parsed.itinerary)){
+      data = parsed;
+      saveData();
+      renderAll();
+      document.getElementById("import-area").value = "";
+      alert("✨ 資料匯入成功！已更新至最新狀態。");
+    } else {
+      alert("代碼格式不正確，請重新確認是否完整複製。");
+    }
+  } catch(e) {
+    alert("無效的代碼，請確認複製的內容是否正確。");
+  }
+}
  
 const CATEGORIES = [
   {key:"food", label:"🍜 餐飲"},
