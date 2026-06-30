@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>首爾之旅 7/7-7/11</title>
 <style>
   :root{
@@ -21,12 +21,16 @@
   }
   *{box-sizing:border-box;}
   body{
-    margin:0;
+    margin:0 auto; /* 讓網頁在寬螢幕時也能居中 */
+    max-width: 480px; /* 鎖定手機黃金寬度比例 */
     font-family: "Noto Sans TC", -apple-system, sans-serif;
     background: var(--bg);
     color: var(--ink);
     padding-bottom: 96px;
     font-size: 16px;
+    min-height: 100vh;
+    box-shadow: 0 0 20px rgba(0,0,0,0.05); /* 在桌機上看時會有優雅的邊框感 */
+    position: relative;
   }
   .topbar{
     position:sticky; top:0; z-index:50;
@@ -57,14 +61,15 @@
   .card h2{ margin:0 0 12px; font-size:18px; color: var(--deep-dark); display:flex; align-items:center; gap:7px; }
   .summary-grid{display:flex; gap:12px;}
   .summary-box{ flex:1; background: linear-gradient(135deg,var(--soft),#FFFFFF); border-radius:16px; padding:14px; text-align:center; }
-  .summary-box .num{font-size:23px; font-weight:800; color:var(--deep-dark);}
+  .summary-box .num{font-size:21px; font-weight:800; color:var(--deep-dark); word-break: break-all;}
   .summary-box .label{font-size:13px; color:var(--ink-soft); margin-top:3px;}
   .cat-row{ display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom: 1px dashed var(--line); font-size:15px; }
   .cat-row:last-child{border-bottom:none;}
   .cat-bar{ height:7px; border-radius:4px; background:var(--soft); margin-top:5px; overflow:hidden; }
   .cat-bar-fill{height:100%; background:var(--accent); border-radius:4px;}
   nav.tabs{
-    position:fixed; bottom:0; left:0; right:0; z-index:100;
+    position:fixed; bottom:0; left:50%; transform: translateX(-50%); right:0; z-index:100;
+    width: 100%; max-width: 480px; /* 導覽列同步鎖定寬度 */
     background:white; display:flex; justify-content:space-around;
     padding:9px 4px calc(9px + env(safe-area-inset-bottom));
     box-shadow: 0 -3px 12px rgba(0,0,0,0.08);
@@ -94,10 +99,10 @@
   .row2 > *{flex:1;}
   .expense-item{ display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-bottom: 1px dashed var(--line); }
   .expense-item:last-child{border-bottom:none;}
-  .expense-left{display:flex; flex-direction:column;}
+  .expense-left{display:flex; flex-direction:column; flex:1; padding-right:8px;}
   .expense-left .nm{font-size:16px; font-weight:600;}
   .expense-left .meta{font-size:12.5px; color:var(--ink-soft); margin-top:3px;}
-  .expense-right{text-align:right; display:flex; align-items:center; gap:9px;}
+  .expense-right{text-align:right; display:flex; align-items:center; gap:9px; flex-shrink:0;}
   .expense-right .amt{font-weight:800; color:var(--deep-dark); font-size:16px;}
   .day-card{margin-bottom:14px;}
   .day-title{ background: var(--soft); color:var(--deep-dark); display:inline-block; padding:5px 14px; border-radius:12px; font-size:13.5px; font-weight:800; margin-bottom:10px; }
@@ -129,7 +134,7 @@
   @keyframes slideUp{from{transform:translateY(20px); opacity:0;} to{transform:translateY(0); opacity:1;}}
   .modal h3{margin:0 0 14px; font-size:18px; color:var(--deep-dark);}
   .close-x{ position:absolute; right:18px; top:16px; background:var(--soft); border:none; width:30px; height:30px; border-radius:50%; color:var(--deep-dark); font-weight:800; font-size:15px; cursor:pointer; }
-  .fab{ position:fixed; bottom:88px; right:18px; z-index:90; background:var(--deep-dark); color:white; width:56px; height:56px; border-radius:50%; border:none; font-size:28px; box-shadow:0 6px 14px rgba(61,74,92,0.4); cursor:pointer; }
+  .fab{ position:fixed; bottom:88px; left:50%; transform: translateX(164px); z-index:90; background:var(--deep-dark); color:white; width:56px; height:56px; border-radius:50%; border:none; font-size:28px; box-shadow:0 6px 14px rgba(61,74,92,0.4); cursor:pointer; }
   .rate-box{ display:flex; align-items:center; gap:9px; background:#F4F6F9; border-radius:14px; padding:11px 14px; margin-bottom:11px; }
   .rate-box span{font-size:13.5px; color:var(--ink-soft);}
   .rate-box input{flex:1; padding:7px 11px;}
@@ -163,7 +168,7 @@
 <div class="topbar">
   <h1>首爾之旅</h1>
   <p>2026.07.07 — 07.11 ・ 索拉格明洞飯店</p>
-  <div class="sync-pill"><span class="sync-dot" id="sync-dot"></span><span id="sync-text">資料同步中</span></div>
+  <div class="sync-pill"><span class="sync-dot" id="sync-dot"></span><span id="sync-text">資料處理中</span></div>
 </div>
  
 <div class="container">
@@ -210,7 +215,6 @@
       </div>
     </div>
 
-    <!-- 方案 A 新增：手動備份與同步區塊 -->
     <div class="card" style="border: 1px solid var(--accent); background: linear-gradient(135deg, #F4F6F9, #FFFFFF);">
       <h2>💾 資料備份與跨裝置同步</h2>
       <p style="font-size:13px; color:var(--ink-soft); margin:0 0 12px 0;">可以在此將電腦安排好的資料複製，並發送到手機上貼入匯入。</p>
@@ -422,7 +426,6 @@ setInterval(()=>{
   }catch(e){ }
 }, 3000);
 
-// 新增功能：導出與匯入函數
 function exportData(){
   try {
     const jsonStr = JSON.stringify(data);
@@ -430,7 +433,6 @@ function exportData(){
     navigator.clipboard.writeText(base64Str).then(()=>{
       alert("🎉 同步代碼已成功複製到剪貼簿！快去傳給手機吧！");
     }).catch(err => {
-      // 備用方案：如果瀏覽器不支援 clipboard API，直接顯示在輸入框讓使用者手動複製
       document.getElementById("import-area").value = base64Str;
       document.getElementById("import-area").select();
       alert("代碼已生成在下方輸入框中，請手動全選複製。");
